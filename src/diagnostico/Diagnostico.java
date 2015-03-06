@@ -6,7 +6,9 @@
 package diagnostico;
 
 import java.util.Hashtable;
+import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 import jpl.Query;
 import jpl.Term;
 
@@ -33,6 +35,12 @@ public class Diagnostico extends javax.swing.JFrame {
     public Diagnostico() {
         initComponents();
         setLocationRelativeTo(null);
+        setIconImage(new javax.swing.ImageIcon(getClass().getResource("/diagnostico/logo.png")).getImage());
+        String s = "consult('diagnostico.pl')";
+        Query q = new Query(s);
+        System.out.println(s + "   " + q.hasSolution());
+        System.out.println("Soluciones :");
+        loadSintomas();
     }
 
     /**
@@ -70,6 +78,7 @@ public class Diagnostico extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         presentaciones = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -166,6 +175,12 @@ public class Diagnostico extends javax.swing.JFrame {
                 .addComponent(diagnosticar)
                 .addContainerGap())
         );
+
+        jTabbedPane1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane1StateChanged(evt);
+            }
+        });
 
         jLabel1.setText("Paciente");
 
@@ -286,27 +301,36 @@ public class Diagnostico extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Historial de Presentaciones", jPanel4);
 
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/diagnostico/diagnostico.png"))); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 419, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel3)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel3)
-                .addGap(39, 39, 39))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel3)
-                .addGap(48, 48, 48)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(32, 32, 32)
+                        .addComponent(jLabel3)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jTabbedPane1)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -315,6 +339,74 @@ public class Diagnostico extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void loadSintomas() {
+        String s = "paciente(Numero,Nombre,Sintomas).";
+        Query q1 = new Query(s);
+        Vector header = new Vector();
+        header.add("Número");
+        header.add("Nombre");
+        header.add("Síntomas");
+        Vector data = new Vector();
+        while (q1.hasMoreSolutions()) {
+            Vector subData = new Vector();
+            java.util.Hashtable h = q1.nextSolution();
+            if (h.get("Numero").toString().equals("0")) {
+                continue;
+            }
+            subData.add(h.get("Numero"));
+            subData.add(h.get("Nombre"));
+            Term[] listTerm = ((Term) h.get("Sintomas")).toTermArray();
+            String sin = "";
+            if (listTerm.length > 1) {
+                for (int i = 0; i < listTerm.length - 1; i++) {
+                    sin += listTerm[i] + ",";
+                }
+                sin += listTerm[listTerm.length - 1];
+            }
+            subData.add(sin);
+            data.add(subData);
+        }
+        pacientes.setModel(new DefaultTableModel(data, header));
+    }
+
+    private void loadEnfermedades() {
+        String s = "enfermedad(Codigo,Nombre,Ocurrencia).";
+        Query q1 = new Query(s);
+        Vector header = new Vector();
+        header.add("Código Enfermedad");
+        header.add("Nombre");
+        header.add("Ocurrencias");
+        Vector data = new Vector();
+        while (q1.hasMoreSolutions()) {
+            Vector subData = new Vector();
+            java.util.Hashtable h = q1.nextSolution();
+            subData.add(h.get("Codigo"));
+            subData.add(h.get("Nombre"));
+            subData.add(h.get("Ocurrencia"));
+            data.add(subData);
+        }
+        enfermedades.setModel(new DefaultTableModel(data, header));
+    }
+
+    private void loadPresentaciones() {
+        String s = "presentacion(CodE,CodS,Ocurrencia).";
+        Query q1 = new Query(s);
+        Vector header = new Vector();
+        header.add("Código Enfermedad");
+        header.add("Código Síntoma");
+        header.add("Ocurrencias");
+        Vector data = new Vector();
+        while (q1.hasMoreSolutions()) {
+            Vector subData = new Vector();
+            java.util.Hashtable h = q1.nextSolution();
+            subData.add(h.get("CodE"));
+            subData.add(h.get("CodS"));
+            subData.add(h.get("Ocurrencia"));
+            data.add(subData);
+        }
+        presentaciones.setModel(new DefaultTableModel(data, header));
+    }
 
     private void diagnosticarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diagnosticarActionPerformed
         if (paciente.getText().equals("")) {
@@ -327,23 +419,42 @@ public class Diagnostico extends javax.swing.JFrame {
         //no debe consultar de nuevo
         //debe consultar todas las enfermedades para comparar si retorna bien
         //consultar todos los sintomas para hacer botones dinamicos
-        String s = "consult('diagnostico.pl')";
-        Query q = new Query(s);
-        System.out.println(s + "   " + q.hasSolution());
-        System.out.println("Soluciones :");
         String sintomas = prepararSintimas().toString();
 //        System.out.println(sintomas);
-        s = "diagnostico(" + paciente.getText() + "," + sintomas + ",Enfermedad).";
+        String s = "diagnostico(" + paciente.getText() + "," + sintomas + ",Enfermedad).";
         System.out.println(s);
         Query q1 = new Query(s);
+        String enfermedades = "";
         while (q1.hasMoreSolutions()) {
             java.util.Hashtable h = q1.nextSolution();
             if (enfermedadesConstantes.contains(h.get("Enfermedad").toString())) {
+                enfermedades += "\t" + h.get("Enfermedad") + "\n";
                 System.out.println("Enfermedad = " + h.get("Enfermedad"));
             }
         }
-
+        jTabbedPane1.setSelectedIndex(0);
+        jTabbedPane1StateChanged(null);
+        if (enfermedades.equals("")) {
+            JOptionPane.showMessageDialog(this, "No hemos encontrado que padezca de alguna enfermedad; Puede descansar en su casa");
+        } else {
+            JOptionPane.showMessageDialog(this, "Usted puede padecer de la(s) siguiente(s) enfermedad(es) :\n\n" + enfermedades);
+        }
     }//GEN-LAST:event_diagnosticarActionPerformed
+
+    private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        if (jTabbedPane1.getTabCount() != 3) {
+            return;
+        }
+        if (jTabbedPane1.getSelectedIndex() == 0) {
+            loadSintomas();
+        }
+        if (jTabbedPane1.getSelectedIndex() == 1) {
+            loadEnfermedades();
+        }
+        if (jTabbedPane1.getSelectedIndex() == 2) {
+            loadPresentaciones();
+        }
+    }//GEN-LAST:event_jTabbedPane1StateChanged
 
     /**
      * @param args the command line arguments
@@ -384,6 +495,7 @@ public class Diagnostico extends javax.swing.JFrame {
     private javax.swing.JButton diagnosticar;
     private javax.swing.JTable enfermedades;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
