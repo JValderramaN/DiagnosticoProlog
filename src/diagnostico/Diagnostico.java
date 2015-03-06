@@ -7,6 +7,7 @@ package diagnostico;
 
 import java.util.Hashtable;
 import java.util.Vector;
+import javax.swing.Icon;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import jpl.Query;
@@ -435,9 +436,11 @@ public class Diagnostico extends javax.swing.JFrame {
         jTabbedPane1.setSelectedIndex(0);
         jTabbedPane1StateChanged(null);
         if (enfermedades.equals("")) {
-            JOptionPane.showMessageDialog(this, "No hemos encontrado que padezca de alguna enfermedad; Puede descansar en su casa");
+            JOptionPane.showMessageDialog(this, "No hemos encontrado que padezca de alguna enfermedad; Puede descansar en su casa", "Resultados", JOptionPane.INFORMATION_MESSAGE,
+                    new javax.swing.ImageIcon(getClass().getResource("/diagnostico/diagnostico.png")));
         } else {
-            JOptionPane.showMessageDialog(this, "Usted puede padecer de la(s) siguiente(s) enfermedad(es) :\n\n" + enfermedades);
+            JOptionPane.showMessageDialog(this, "Usted puede padecer de la(s) siguiente(s) enfermedad(es) :\n\n" + enfermedades, "Resultados", JOptionPane.INFORMATION_MESSAGE,
+                    new javax.swing.ImageIcon(getClass().getResource("/diagnostico/diagnostico.png")));
         }
     }//GEN-LAST:event_diagnosticarActionPerformed
 
